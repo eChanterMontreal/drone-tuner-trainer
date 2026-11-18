@@ -103,6 +103,10 @@ td.bad{color:var(--red);font-weight:700}
 .listen{display:flex;gap:8px;margin-top:12px}
 .listen .btn{font-size:14px;padding:12px 6px}
 .share{width:100%;margin-top:10px}
+.inst{list-style:none;margin:0;padding:0;font-size:14px;line-height:1.45}
+.inst li{padding:7px 0;border-bottom:1px solid var(--line)}
+.inst li:last-child{border:0}
+.inst li.me{background:var(--green-soft);border-radius:10px;padding:8px 10px;border:0;margin-bottom:4px}
 .note{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.4}
 </style>
 </head>
@@ -112,7 +116,7 @@ td.bad{color:var(--red);font-weight:700}
 <!-- HOME -->
 <section id="home">
   <header>
-    <h1>Drone Tuner <small>v1.1</small></h1>
+    <h1>Drone Tuner <small>v1.2</small></h1>
     <select class="lang" id="lang" aria-label="Language">
       <option value="es">ES</option><option value="en">EN</option><option value="fr">FR</option>
     </select>
@@ -127,6 +131,15 @@ td.bad{color:var(--red);font-weight:700}
       <button class="btn sec" id="copyBtn" data-t="copy"></button>
     </div>
     <p class="note" id="shareUrl" style="word-break:break-all"></p>
+  </div>
+
+  <div id="installBox">
+    <h2 data-t="install"></h2>
+    <div class="card">
+      <button class="btn pri hidden" id="installNow" style="width:100%;margin-bottom:10px" data-t="installNow"></button>
+      <ul class="inst" id="instList"></ul>
+      <p class="note" data-t="instWarn"></p>
+    </div>
   </div>
 
   <h2 data-t="how"></h2>
@@ -209,7 +222,7 @@ const T = {
 es:{sub:"Afina los drones de oído hasta que desaparezca el «wa-wa-wa».",how:"Cómo se juega",history:"Historial",settings:"Ajustes",lowA:"Low A del chanter (Hz)",volume:"Volumen",
 howList:["El «wa-wa-wa» es el batido entre dos sonidos casi iguales: cuanto más lento, más cerca estás.","▲ Subir la parte de arriba alarga el drone y <b>baja</b> el tono. ▼ Bajarla lo acorta y <b>sube</b> el tono.","Primero da un paso grande (4 mm): si el wa-wa se acelera, vas en la dirección equivocada.","Luego ajusta fino hasta oír un solo tono, y toca «Listo».","También puedes arrastrar el drone con el dedo. Tócalo para elegirlo."],
 lv:{b:["Principiante","Dos tenores, con ayuda visual del batido y pistas."],m:["Intermedio","Tres drones, sin ayuda visual."],a:["Avanzado","Tres drones y el reed se calienta. Muy estricto, sin pistas."]},
-best:"Mejor",share:"Compartir la app",shareTxt:"Envía este link a tus compañeros de banda:",copy:"Copiar link",copied:"¡Copiado! ✓",shareMsg:"🎵 Drone Tuner – juego para aprender a afinar los drones de la gaita de oído. Pruébalo:",noHist:"Aún no hay partidas.",avg:"Promedio",
+best:"Mejor",install:"📲 Instalar la app",installNow:"Instalar ahora",inst:{android:"<b>Android (Chrome):</b> menú ⋮ → «Instalar app» o «Agregar a pantalla principal».",ios:"<b>iPhone (Safari):</b> botón Compartir (cuadrado con flecha) → «Agregar a inicio».",pc:"<b>PC (Chrome o Edge):</b> ícono de instalar ⊕ a la derecha de la barra de direcciones."},instWarn:"⚠️ Si abriste el link dentro de WhatsApp, no aparece la opción de instalar: toca ⋮ y elige «Abrir en Chrome» o «Abrir en Safari». Una vez instalada funciona sin internet.",share:"Compartir la app",shareTxt:"Envía este link a tus compañeros de banda:",copy:"Copiar link",copied:"¡Copiado! ✓",shareMsg:"🎵 Drone Tuner – juego para aprender a afinar los drones de la gaita de oído. Pruébalo:",noHist:"Aún no hay partidas.",avg:"Promedio",
 st:{t1:"Tenor 1 ↔ Low A",t2:"Tenor 2 ↔ Tenor 1",b:"Bajo ↔ Tenores",all:"Todos + chanter"},
 in:{t1:"Suenan el chanter (Low A) y el Tenor 1. Ajusta el Tenor 1 hasta que desaparezca el wa-wa.",t2:"Suenan los dos tenores. Ajusta el Tenor 2 contra el Tenor 1.",b:"Suenan los tenores y el bajo (una octava más abajo). Ajusta el Bajo.",all:"Suena todo junto. Toca cualquier drone para retocarlo."},
 up:"Subir",upSub:"más largo · más grave",down:"Bajar",downSub:"más corto · más agudo",fine:"fino",
@@ -225,7 +238,7 @@ vd:["Sigue practicando: busca primero la dirección con un paso grande.","Vas bi
 en:{sub:"Tune the drones by ear until the “wa-wa-wa” disappears.",how:"How to play",history:"History",settings:"Settings",lowA:"Chanter Low A (Hz)",volume:"Volume",
 howList:["The “wa-wa-wa” is the beat between two almost-equal sounds: the slower it gets, the closer you are.","▲ Moving the top section up makes the drone longer and the pitch <b>lower</b>. ▼ Moving it down makes it shorter and the pitch <b>higher</b>.","First take a big step (4 mm): if the wa-wa gets faster, you're going the wrong way.","Then fine-tune until you hear a single tone, and tap “Done”.","You can also drag the drone with your finger. Tap it to select it."],
 lv:{b:["Beginner","Two tenors, with a visual beat aid and hints."],m:["Intermediate","Three drones, no visual aid."],a:["Advanced","Three drones and the reed warms up. Very strict, no hints."]},
-best:"Best",share:"Share the app",shareTxt:"Send this link to your bandmates:",copy:"Copy link",copied:"Copied! ✓",shareMsg:"🎵 Drone Tuner – a game to learn to tune your bagpipe drones by ear. Try it:",noHist:"No games yet.",avg:"Average",
+best:"Best",install:"📲 Install the app",installNow:"Install now",inst:{android:"<b>Android (Chrome):</b> menu ⋮ → “Install app” or “Add to Home screen”.",ios:"<b>iPhone (Safari):</b> Share button (square with arrow) → “Add to Home Screen”.",pc:"<b>PC (Chrome or Edge):</b> install icon ⊕ on the right of the address bar."},instWarn:"⚠️ If you opened the link inside WhatsApp, the install option won’t show: tap ⋮ and choose “Open in Chrome” or “Open in Safari”. Once installed it works offline.",share:"Share the app",shareTxt:"Send this link to your bandmates:",copy:"Copy link",copied:"Copied! ✓",shareMsg:"🎵 Drone Tuner – a game to learn to tune your bagpipe drones by ear. Try it:",noHist:"No games yet.",avg:"Average",
 st:{t1:"Tenor 1 ↔ Low A",t2:"Tenor 2 ↔ Tenor 1",b:"Bass ↔ Tenors",all:"All + chanter"},
 in:{t1:"You hear the chanter (Low A) and Tenor 1. Adjust Tenor 1 until the wa-wa disappears.",t2:"You hear both tenors. Adjust Tenor 2 against Tenor 1.",b:"You hear the tenors and the bass (one octave lower). Adjust the Bass.",all:"Everything plays together. Tap any drone to touch it up."},
 up:"Up",upSub:"longer · lower",down:"Down",downSub:"shorter · higher",fine:"fine",
@@ -241,7 +254,7 @@ vd:["Keep practising: find the direction first with a big step.","Good progress.
 fr:{sub:"Accorde les bourdons à l'oreille jusqu'à ce que le « wa-wa-wa » disparaisse.",how:"Comment jouer",history:"Historique",settings:"Réglages",lowA:"Low A du chanter (Hz)",volume:"Volume",
 howList:["Le « wa-wa-wa » est le battement entre deux sons presque identiques : plus il ralentit, plus tu es proche.","▲ Monter la partie du haut allonge le bourdon et rend le son plus <b>grave</b>. ▼ La descendre le raccourcit et rend le son plus <b>aigu</b>.","Fais d'abord un grand pas (4 mm) : si le wa-wa accélère, tu vas dans le mauvais sens.","Ensuite ajuste finement jusqu'à entendre un seul son, puis touche « Fini ».","Tu peux aussi glisser le bourdon avec le doigt. Touche-le pour le choisir."],
 lv:{b:["Débutant","Deux ténors, avec aide visuelle du battement et indices."],m:["Intermédiaire","Trois bourdons, sans aide visuelle."],a:["Avancé","Trois bourdons et l'anche se réchauffe. Très strict, sans indices."]},
-best:"Record",share:"Partager l\'app",shareTxt:"Envoie ce lien à tes collègues de la bande :",copy:"Copier le lien",copied:"Copié ! ✓",shareMsg:"🎵 Drone Tuner – un jeu pour apprendre à accorder les bourdons de la cornemuse à l\'oreille. Essaie-le :",noHist:"Aucune partie pour l'instant.",avg:"Moyenne",
+best:"Record",install:"📲 Installer l\'app",installNow:"Installer maintenant",inst:{android:"<b>Android (Chrome) :</b> menu ⋮ → « Installer l\'application » ou « Ajouter à l\'écran d\'accueil ».",ios:"<b>iPhone (Safari) :</b> bouton Partager (carré avec flèche) → « Sur l\'écran d\'accueil ».",pc:"<b>PC (Chrome ou Edge) :</b> icône d\'installation ⊕ à droite de la barre d\'adresse."},instWarn:"⚠️ Si tu as ouvert le lien dans WhatsApp, l\'option d\'installation n\'apparaît pas : touche ⋮ et choisis « Ouvrir dans Chrome » ou « Ouvrir dans Safari ». Une fois installée, elle fonctionne sans internet.",share:"Partager l\'app",shareTxt:"Envoie ce lien à tes collègues de la bande :",copy:"Copier le lien",copied:"Copié ! ✓",shareMsg:"🎵 Drone Tuner – un jeu pour apprendre à accorder les bourdons de la cornemuse à l\'oreille. Essaie-le :",noHist:"Aucune partie pour l'instant.",avg:"Moyenne",
 st:{t1:"Ténor 1 ↔ Low A",t2:"Ténor 2 ↔ Ténor 1",b:"Basse ↔ Ténors",all:"Tous + chanter"},
 in:{t1:"Tu entends le chanter (Low A) et le Ténor 1. Ajuste le Ténor 1 jusqu'à ce que le wa-wa disparaisse.",t2:"Tu entends les deux ténors. Ajuste le Ténor 2 sur le Ténor 1.",b:"Tu entends les ténors et la basse (une octave plus bas). Ajuste la Basse.",all:"Tout joue ensemble. Touche un bourdon pour le retoucher."},
 up:"Monter",upSub:"plus long · plus grave",down:"Descendre",downSub:"plus court · plus aigu",fine:"fin",
@@ -266,7 +279,7 @@ function applyLang(){
   $("lang").value = lang;
   document.querySelectorAll("[data-t]").forEach(el=>{ el.innerHTML = t(el.dataset.t); });
   $("howList").innerHTML = t("howList").map(s=>`<li>${s}</li>`).join("");
-  renderHome();
+  renderHome(); renderInstall();
   if(G) renderGameText();
 }
 
@@ -583,6 +596,20 @@ $("lsPerfect").onclick = ()=>listen(true);
 $("lsStop").onclick = ()=>silenceAll();
 $("again").onclick = ()=>{ silenceAll(); startGame(G.lv); };
 $("toMenu").onclick = ()=>{ silenceAll(); G=null; show("home"); renderHome(); };
+
+/* ---------- install ---------- */
+let deferredPrompt = null;
+const isStandalone = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+function platform(){ const ua = navigator.userAgent; if(/iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints>1)) return "ios"; if(/Android/.test(ua)) return "android"; return "pc"; }
+function renderInstall(){
+  $("installBox").classList.toggle("hidden", isStandalone());
+  const me = platform(), order = [me, ...["android","ios","pc"].filter(x=>x!==me)];
+  $("instList").innerHTML = order.map(k=>`<li class="${k===me?"me":""}">${t("inst."+k)}</li>`).join("");
+  $("installNow").classList.toggle("hidden", !deferredPrompt);
+}
+window.addEventListener("beforeinstallprompt", e=>{ e.preventDefault(); deferredPrompt = e; renderInstall(); });
+window.addEventListener("appinstalled", ()=>{ deferredPrompt = null; renderInstall(); });
+$("installNow").onclick = async ()=>{ if(!deferredPrompt) return; deferredPrompt.prompt(); try{ await deferredPrompt.userChoice; }catch(e){} deferredPrompt = null; renderInstall(); };
 
 /* ---------- share ---------- */
 const APP_URL = "https://echantermontreal.github.io/drone-tuner-trainer/";
