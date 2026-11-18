@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1f4d3a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Drone Tuner">
+<meta property="og:title" content="Drone Tuner – Bagpipes">
+<meta property="og:description" content="Afina los drones de oído · Tune your drones by ear · Accorde tes bourdons à l'oreille">
+<title>Drone Tuner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f4eee2;--surface:#fffdf8;--ink:#1c2621;--muted:#66706a;--line:#ddd3c0;
+  --green:#1f4d3a;--green-soft:#dfeae3;--red:#a3302b;--red-soft:#f5dedb;--gold:#b8862b;--gold-soft:#f6ead0;
+  --f-display:"Fraunces",Georgia,serif;--f-body:"Inter",system-ui,-apple-system,sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px}
+body{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);overscroll-behavior:none}
+.wrap{max-width:520px;margin:0 auto;padding:12px 14px 28px}
+header{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+h1{font-family:var(--f-display);font-weight:800;font-size:26px;margin:0;color:var(--green);letter-spacing:-.3px}
+h1 small{font-family:var(--f-body);font-size:11px;font-weight:600;color:var(--muted);margin-left:4px;vertical-align:middle}
+h2{font-family:var(--f-display);font-weight:700;font-size:19px;margin:18px 0 8px}
+select,input{font:inherit}
+.lang{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:6px 8px;font-size:14px}
+.sub{color:var(--muted);margin:0 0 14px;font-size:15px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px}
+.levels{display:flex;flex-direction:column;gap:10px}
+.lvl{display:flex;align-items:center;gap:12px;text-align:left;width:100%;background:var(--surface);border:2px solid var(--line);border-radius:16px;padding:14px;cursor:pointer;font:inherit;color:inherit}
+.lvl:active{transform:scale(.985)}
+.lvl .ico{font-size:28px;width:40px;text-align:center}
+.lvl b{display:block;font-family:var(--f-display);font-size:19px}
+.lvl span{display:block;color:var(--muted);font-size:13px;margin-top:2px}
+.lvl .best{margin-left:auto;text-align:right;min-width:56px}
+.lvl .best i{font-style:normal;display:block;font-size:11px;color:var(--muted)}
+.lvl .best em{font-style:normal;font-family:var(--f-display);font-weight:800;font-size:22px;color:var(--green)}
+.how{margin:0;padding-left:18px;color:var(--ink);font-size:14px;line-height:1.45}
+.how li{margin-bottom:6px}
+.hist{list-style:none;margin:0;padding:0;font-size:14px}
+.hist li{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line)}
+.hist li:last-child{border:0}
+.hist .sc{font-weight:700}
+.muted{color:var(--muted)}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0}
+.stepper{display:flex;align-items:center;gap:6px}
+.stepper button{width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:var(--bg);font-size:18px;cursor:pointer}
+.stepper output{min-width:48px;text-align:center;font-weight:700}
+input[type=range]{width:140px;accent-color:var(--green)}
+.hidden{display:none!important}
+
+/* game */
+.steps{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;margin-bottom:8px;scrollbar-width:none}
+.steps::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;font-size:12px;font-weight:600;border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:999px;padding:5px 10px}
+.chip.on{background:var(--green);border-color:var(--green);color:#fff}
+.chip.done{background:var(--green-soft);color:var(--green);border-color:var(--green-soft)}
+.instr{font-size:14px;line-height:1.4;margin:0 0 6px;min-height:40px}
+.stage{position:relative;background:linear-gradient(#fbf7ee,#efe6d3);border:1px solid var(--line);border-radius:18px;overflow:hidden;touch-action:none}
+.stage svg{display:block;width:100%;height:auto;max-height:52vh}
+.legend{position:absolute;left:10px;top:8px;font-size:11px;color:var(--muted);line-height:1.35;background:rgba(255,253,248,.85);padding:4px 7px;border-radius:8px}
+.beat{position:absolute;right:10px;top:8px;display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;background:rgba(255,253,248,.85);padding:4px 8px;border-radius:8px}
+.beat i{width:14px;height:14px;border-radius:50%;background:var(--red);display:inline-block}
+.toast{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);background:var(--ink);color:#fff;font-size:13px;padding:7px 12px;border-radius:10px;max-width:90%;text-align:center;opacity:0;transition:opacity .3s;pointer-events:none}
+.toast.show{opacity:1}
+.ctrl{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.col{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:8px;text-align:center}
+.col .lab{font-weight:700;font-size:15px}
+.col .lab.up{color:var(--green)}.col .lab.dn{color:var(--red)}
+.col .lab small{display:block;font-weight:400;font-size:11px;color:var(--muted)}
+.col .btns{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+.mv{border:0;border-radius:12px;padding:12px 2px;font:inherit;font-weight:700;font-size:15px;cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+.mv.up{background:var(--green-soft);color:var(--green)}
+.mv.dn{background:var(--red-soft);color:var(--red)}
+.mv:active{filter:brightness(.92)}
+.mv .ar{display:block;font-size:22px;line-height:1}
+.actions{display:flex;gap:8px;margin-top:10px}
+.btn{flex:1;border:0;border-radius:14px;padding:14px 10px;font:inherit;font-weight:700;font-size:16px;cursor:pointer}
+.btn.pri{background:var(--green);color:#fff}
+.btn.sec{background:var(--surface);border:1px solid var(--line);color:var(--ink)}
+.btn.gold{background:var(--gold-soft);color:#7a5714}
+.btn:disabled{opacity:.4}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;font-size:14px}
+.topbar button{background:none;border:0;font:inherit;color:var(--muted);cursor:pointer;padding:4px 0}
+
+/* result */
+.score{text-align:center;padding:6px 0 10px}
+.score .n{font-family:var(--f-display);font-weight:800;font-size:64px;color:var(--green);line-height:1}
+.score .stars{font-size:26px;letter-spacing:4px;margin:4px 0}
+.score .v{font-size:15px}
+.score .nb{color:var(--gold);font-weight:700;font-size:14px;margin-top:4px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font-size:11px;color:var(--muted);font-weight:600;text-align:right;padding:4px 3px;border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left}
+td{text-align:right;padding:8px 3px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+tr:last-child td{border:0}
+td.good{color:var(--green);font-weight:700}
+td.bad{color:var(--red);font-weight:700}
+.meta{display:flex;justify-content:space-around;font-size:13px;color:var(--muted);margin-top:10px}
+.listen{display:flex;gap:8px;margin-top:12px}
+.listen .btn{font-size:14px;padding:12px 6px}
+.note{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.4}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- HOME -->
+<section id="home">
+  <header>
+    <h1>Drone Tuner <small>v1.0</small></h1>
+    <select class="lang" id="lang" aria-label="Language">
+      <option value="es">ES</option><option value="en">EN</option><option value="fr">FR</option>
+    </select>
+  </header>
+  <p class="sub" data-t="sub"></p>
+  <div class="levels" id="levels"></div>
+
+  <h2 data-t="how"></h2>
+  <div class="card"><ol class="how" id="howList"></ol></div>
+
+  <h2 data-t="history"></h2>
+  <div class="card"><ul class="hist" id="hist"></ul></div>
+
+  <h2 data-t="settings"></h2>
+  <div class="card">
+    <div class="row"><span data-t="lowA"></span>
+      <div class="stepper"><button id="aMinus" aria-label="-">−</button><output id="aVal">480</output><button id="aPlus" aria-label="+">+</button></div>
+    </div>
+    <div class="row"><span data-t="volume"></span><input type="range" id="vol" min="0" max="100" value="70"></div>
+  </div>
+</section>
+
+<!-- GAME -->
+<section id="game" class="hidden">
+  <div class="topbar">
+    <button id="quit" data-t="quit"></button>
+    <b id="lvlName"></b>
+    <span id="clock" class="muted">0:00</span>
+  </div>
+  <div class="steps" id="steps"></div>
+  <p class="instr" id="instr"></p>
+  <div class="stage" id="stage">
+    <div class="legend" id="legend"></div>
+    <div class="beat hidden" id="beat"><i id="beatDot"></i><span id="beatTxt"></span></div>
+    <svg id="svg" viewBox="0 0 360 470" aria-label="drones"></svg>
+    <div class="toast" id="toast"></div>
+  </div>
+  <div class="ctrl">
+    <div class="col">
+      <div class="lab up">▲ <span data-t="up"></span><small data-t="upSub"></small></div>
+      <div class="btns">
+        <button class="mv up" data-mv="4"><span class="ar">⏫</span>4 mm</button>
+        <button class="mv up" data-mv="0.2" data-rep="1"><span class="ar">▲</span><span data-t="fine"></span></button>
+      </div>
+    </div>
+    <div class="col">
+      <div class="lab dn">▼ <span data-t="down"></span><small data-t="downSub"></small></div>
+      <div class="btns">
+        <button class="mv dn" data-mv="-0.2" data-rep="1"><span class="ar">▼</span><span data-t="fine"></span></button>
+        <button class="mv dn" data-mv="-4"><span class="ar">⏬</span>4 mm</button>
+      </div>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn gold" id="hintBtn">💡 <span data-t="hint"></span></button>
+    <button class="btn pri" id="nextBtn"></button>
+  </div>
+</section>
+
+<!-- RESULT -->
+<section id="result" class="hidden">
+  <header><h1 data-t="result"></h1><span id="resLvl" class="muted"></span></header>
+  <div class="card">
+    <div class="score"><div class="n" id="resScore">0</div><div class="stars" id="resStars"></div><div class="v" id="resVerdict"></div><div class="nb hidden" id="resBest" data-t="newBest"></div></div>
+    <table><thead><tr><th></th><th data-t="target"></th><th data-t="yours"></th><th>cents</th><th data-t="beats"></th><th data-t="fix"></th></tr></thead><tbody id="resRows"></tbody></table>
+    <div class="meta"><span><span data-t="time"></span>: <b id="resTime"></b></span><span><span data-t="hints"></span>: <b id="resHints"></b></span></div>
+    <div class="listen">
+      <button class="btn sec" id="lsYours" data-t="listenYours"></button>
+      <button class="btn sec" id="lsPerfect" data-t="listenPerfect"></button>
+      <button class="btn sec" id="lsStop" style="flex:.5">■</button>
+    </div>
+    <p class="note" data-t="fixNote"></p>
+  </div>
+  <div class="actions">
+    <button class="btn sec" id="toMenu" data-t="menu"></button>
+    <button class="btn pri" id="again" data-t="again"></button>
+  </div>
+</section>
+
+</div>
+<script>
+"use strict";
+/* ---------- i18n ---------- */
+const T = {
+es:{sub:"Afina los drones de oído hasta que desaparezca el «wa-wa-wa».",how:"Cómo se juega",history:"Historial",settings:"Ajustes",lowA:"Low A del chanter (Hz)",volume:"Volumen",
+howList:["El «wa-wa-wa» es el batido entre dos sonidos casi iguales: cuanto más lento, más cerca estás.","▲ Subir la parte de arriba alarga el drone y <b>baja</b> el tono. ▼ Bajarla lo acorta y <b>sube</b> el tono.","Primero da un paso grande (4 mm): si el wa-wa se acelera, vas en la dirección equivocada.","Luego ajusta fino hasta oír un solo tono, y toca «Listo».","También puedes arrastrar el drone con el dedo. Tócalo para elegirlo."],
+lv:{b:["Principiante","Dos tenores, con ayuda visual del batido y pistas."],m:["Intermedio","Tres drones, sin ayuda visual."],a:["Avanzado","Tres drones y el reed se calienta. Muy estricto, sin pistas."]},
+best:"Mejor",noHist:"Aún no hay partidas.",avg:"Promedio",
+st:{t1:"Tenor 1 ↔ Low A",t2:"Tenor 2 ↔ Tenor 1",b:"Bajo ↔ Tenores",all:"Todos + chanter"},
+in:{t1:"Suenan el chanter (Low A) y el Tenor 1. Ajusta el Tenor 1 hasta que desaparezca el wa-wa.",t2:"Suenan los dos tenores. Ajusta el Tenor 2 contra el Tenor 1.",b:"Suenan los tenores y el bajo (una octava más abajo). Ajusta el Bajo.",all:"Suena todo junto. Toca cualquier drone para retocarlo."},
+up:"Subir",upSub:"más largo · más grave",down:"Bajar",downSub:"más corto · más agudo",fine:"fino",
+hint:"Pista",next:"Siguiente →",done:"Listo ✓",quit:"← Salir",beat:"Batido",
+legend:"▲ subir = más grave<br>▼ bajar = más agudo",
+hUp:"Pista: sube el {d} ▲",hDn:"Pista: baja el {d} ▼",hOk:"¡El {d} está muy cerca!",noHint:"Sin pistas en este nivel",
+warm:"🔥 ¡El reed se calentó! Todo subió un poco: vuelve a revisar.",
+n:{t1:"Tenor 1",t2:"Tenor 2",b:"Bajo",ch:"Chanter"},
+result:"Resultado",target:"Objetivo",yours:"Tuyo",beats:"wa/s",fix:"Ajuste",time:"Tiempo",hints:"Pistas",
+listenYours:"▶ Tu afinación",listenPerfect:"▶ Perfecta",again:"Otra vez",menu:"Menú",newBest:"¡Nueva mejor marca! 🏆",
+fixNote:"Hz y cents comparados con el Low A del chanter. «Ajuste» indica cuántos mm faltaban: ▲ subir o ▼ bajar.",
+vd:["Sigue practicando: busca primero la dirección con un paso grande.","Vas bien. Escucha el batido con calma.","Muy bien, casi perfecto.","¡Afinación de campeonato! 🏆"]},
+en:{sub:"Tune the drones by ear until the “wa-wa-wa” disappears.",how:"How to play",history:"History",settings:"Settings",lowA:"Chanter Low A (Hz)",volume:"Volume",
+howList:["The “wa-wa-wa” is the beat between two almost-equal sounds: the slower it gets, the closer you are.","▲ Moving the top section up makes the drone longer and the pitch <b>lower</b>. ▼ Moving it down makes it shorter and the pitch <b>higher</b>.","First take a big step (4 mm): if the wa-wa gets faster, you're going the wrong way.","Then fine-tune until you hear a single tone, and tap “Done”.","You can also drag the drone with your finger. Tap it to select it."],
+lv:{b:["Beginner","Two tenors, with a visual beat aid and hints."],m:["Intermediate","Three drones, no visual aid."],a:["Advanced","Three drones and the reed warms up. Very strict, no hints."]},
+best:"Best",noHist:"No games yet.",avg:"Average",
+st:{t1:"Tenor 1 ↔ Low A",t2:"Tenor 2 ↔ Tenor 1",b:"Bass ↔ Tenors",all:"All + chanter"},
+in:{t1:"You hear the chanter (Low A) and Tenor 1. Adjust Tenor 1 until the wa-wa disappears.",t2:"You hear both tenors. Adjust Tenor 2 against Tenor 1.",b:"You hear the tenors and the bass (one octave lower). Adjust the Bass.",all:"Everything plays together. Tap any drone to touch it up."},
+up:"Up",upSub:"longer · lower",down:"Down",downSub:"shorter · higher",fine:"fine",
+hint:"Hint",next:"Next →",done:"Done ✓",quit:"← Quit",beat:"Beat",
+legend:"▲ up = lower pitch<br>▼ down = higher pitch",
+hUp:"Hint: move {d} up ▲",hDn:"Hint: move {d} down ▼",hOk:"{d} is very close!",noHint:"No hints at this level",
+warm:"🔥 The reed warmed up! Everything went a bit sharp: check again.",
+n:{t1:"Tenor 1",t2:"Tenor 2",b:"Bass",ch:"Chanter"},
+result:"Result",target:"Target",yours:"Yours",beats:"wa/s",fix:"Fix",time:"Time",hints:"Hints",
+listenYours:"▶ Your tuning",listenPerfect:"▶ Perfect",again:"Play again",menu:"Menu",newBest:"New personal best! 🏆",
+fixNote:"Hz and cents compared to the chanter Low A. “Fix” shows how many mm were missing: ▲ up or ▼ down.",
+vd:["Keep practising: find the direction first with a big step.","Good progress. Listen to the beat calmly.","Very good, almost perfect.","Championship tuning! 🏆"]},
+fr:{sub:"Accorde les bourdons à l'oreille jusqu'à ce que le « wa-wa-wa » disparaisse.",how:"Comment jouer",history:"Historique",settings:"Réglages",lowA:"Low A du chanter (Hz)",volume:"Volume",
+howList:["Le « wa-wa-wa » est le battement entre deux sons presque identiques : plus il ralentit, plus tu es proche.","▲ Monter la partie du haut allonge le bourdon et rend le son plus <b>grave</b>. ▼ La descendre le raccourcit et rend le son plus <b>aigu</b>.","Fais d'abord un grand pas (4 mm) : si le wa-wa accélère, tu vas dans le mauvais sens.","Ensuite ajuste finement jusqu'à entendre un seul son, puis touche « Fini ».","Tu peux aussi glisser le bourdon avec le doigt. Touche-le pour le choisir."],
+lv:{b:["Débutant","Deux ténors, avec aide visuelle du battement et indices."],m:["Intermédiaire","Trois bourdons, sans aide visuelle."],a:["Avancé","Trois bourdons et l'anche se réchauffe. Très strict, sans indices."]},
+best:"Record",noHist:"Aucune partie pour l'instant.",avg:"Moyenne",
+st:{t1:"Ténor 1 ↔ Low A",t2:"Ténor 2 ↔ Ténor 1",b:"Basse ↔ Ténors",all:"Tous + chanter"},
+in:{t1:"Tu entends le chanter (Low A) et le Ténor 1. Ajuste le Ténor 1 jusqu'à ce que le wa-wa disparaisse.",t2:"Tu entends les deux ténors. Ajuste le Ténor 2 sur le Ténor 1.",b:"Tu entends les ténors et la basse (une octave plus bas). Ajuste la Basse.",all:"Tout joue ensemble. Touche un bourdon pour le retoucher."},
+up:"Monter",upSub:"plus long · plus grave",down:"Descendre",downSub:"plus court · plus aigu",fine:"fin",
+hint:"Indice",next:"Suivant →",done:"Fini ✓",quit:"← Quitter",beat:"Battement",
+legend:"▲ monter = plus grave<br>▼ descendre = plus aigu",
+hUp:"Indice : monte le {d} ▲",hDn:"Indice : descends le {d} ▼",hOk:"Le {d} est très proche !",noHint:"Pas d'indices à ce niveau",
+warm:"🔥 L'anche s'est réchauffée ! Tout a monté un peu : vérifie encore.",
+n:{t1:"Ténor 1",t2:"Ténor 2",b:"Basse",ch:"Chanter"},
+result:"Résultat",target:"Cible",yours:"Toi",beats:"wa/s",fix:"Ajust.",time:"Temps",hints:"Indices",
+listenYours:"▶ Ton accord",listenPerfect:"▶ Parfait",again:"Rejouer",menu:"Menu",newBest:"Nouveau record ! 🏆",
+fixNote:"Hz et cents comparés au Low A du chanter. « Ajust. » indique combien de mm manquaient : ▲ monter ou ▼ descendre.",
+vd:["Continue : trouve d'abord la direction avec un grand pas.","Tu progresses. Écoute le battement calmement.","Très bien, presque parfait.","Accord de championnat ! 🏆"]}
+};
+const LS = {get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+let lang = LS.get("dt_lang", (navigator.language||"es").slice(0,2));
+if(!T[lang]) lang="es";
+const t = k => k.split(".").reduce((o,p)=>o&&o[p], T[lang]) ?? k;
+const $ = id => document.getElementById(id);
+
+function applyLang(){
+  document.documentElement.lang = lang;
+  $("lang").value = lang;
+  document.querySelectorAll("[data-t]").forEach(el=>{ el.innerHTML = t(el.dataset.t); });
+  $("howList").innerHTML = t("howList").map(s=>`<li>${s}</li>`).join("");
+  renderHome();
+  if(G) renderGameText();
+}
+
+/* ---------- settings ---------- */
+let LOWA = LS.get("dt_a", 480), VOL = LS.get("dt_vol", 70);
+function setA(v){ LOWA = Math.max(466, Math.min(490, v)); $("aVal").textContent = LOWA; LS.set("dt_a", LOWA); }
+
+/* ---------- levels ---------- */
+const LEVELS = {
+  b:{ico:"🎯", drones:["t1","t2"], steps:["t1","t2"], off:[5,12], k:3, aid:true, hintCost:5, hints:true, drift:false},
+  m:{ico:"🎶", drones:["t1","t2","b"], steps:["t1","t2","b","all"], off:[3,9], k:5, aid:false, hintCost:15, hints:true, drift:false},
+  a:{ico:"🏆", drones:["t1","t2","b"], steps:["t1","t2","b","all"], off:[2,8], k:8, aid:false, hintCost:0, hints:false, drift:true}
+};
+const REF = {t1:"ch", t2:"t1", b:"t1"};
+const STEP_PLAY = {t1:["ch","t1"], t2:["t1","t2"], b:["t1","t2","b"], all:["ch","t1","t2","b"]};
+
+/* ---------- physics ---------- */
+// Drone ≈ tube closed at the reed end: f = c / 4L. Slide p (mm) changes L.
+const C_MM = 343000;
+const nominal = id => id==="b" ? LOWA/4 : LOWA/2;
+const L0 = id => C_MM/(4*nominal(id));
+function fDrone(d, p = d.p){ return nominal(d.id) * L0(d.id)/(L0(d.id) + p - d.pStar) * d.drift; }
+function fCh(){ return LOWA * G.chDrift; }
+function ideal(id){ return id==="b" ? fCh()/4 : fCh()/2; }
+function pIdeal(d){ return d.pStar + L0(d.id)*(d.drift*nominal(d.id)/ideal(d.id) - 1); }
+const cents = (f, ref) => 1200*Math.log2(f/ref);
+function freqOf(id){ return id==="ch" ? fCh() : fDrone(G.d[id]); }
+function beatRate(id){ // audible beat against its reference
+  const f = freqOf(id), r = freqOf(REF[id]);
+  if(id==="t1") return Math.abs(2*f - r);
+  if(id==="t2") return Math.abs(f - r);
+  return Math.abs(2*f - r);
+}
+
+/* ---------- audio ---------- */
+let AC=null, master=null, voices={}, silentEl=null;
+function wave(ctx, n, fn){ const re=new Float32Array(n+1), im=new Float32Array(n+1); for(let i=1;i<=n;i++) im[i]=fn(i); return ctx.createPeriodicWave(re,im); }
+function initAudio(){
+  try{ if(navigator.audioSession) navigator.audioSession.type="playback"; }catch(e){}
+  if(!silentEl){ // keeps iOS playing with the ringer switch off
+    try{ silentEl=new Audio(silentWav()); silentEl.loop=true; silentEl.play().catch(()=>{}); }catch(e){}
+  }
+  if(AC){ AC.resume(); return; }
+  AC = new (window.AudioContext||window.webkitAudioContext)();
+  const comp = AC.createDynamicsCompressor(); comp.threshold.value=-14; comp.ratio.value=4;
+  master = AC.createGain(); master.gain.value = VOL/100*0.9;
+  master.connect(comp); comp.connect(AC.destination);
+  const droneW = wave(AC, 28, i => (i%2?1:0.7)/Math.pow(i,0.85));
+  const chW = wave(AC, 34, i => (i%2?1:0.8)/Math.pow(i,0.55));
+  const mk = (id, w, lp, lvl) => {
+    const o=AC.createOscillator(), f=AC.createBiquadFilter(), g=AC.createGain();
+    o.setPeriodicWave(w); f.type="lowpass"; f.frequency.value=lp; f.Q.value=0.7; g.gain.value=0;
+    o.connect(f); f.connect(g); g.connect(master); o.frequency.value=200; o.start();
+    voices[id]={o,g,lvl};
+  };
+  mk("ch", chW, 4200, 0.10); mk("t1", droneW, 2600, 0.16); mk("t2", droneW, 2600, 0.16); mk("b", droneW, 2000, 0.22);
+  AC.resume();
+}
+function setVoice(id, f, on){
+  const v = voices[id]; if(!v) return; const now = AC.currentTime;
+  v.o.frequency.setTargetAtTime(f, now, 0.015);
+  v.g.gain.setTargetAtTime(on ? v.lvl : 0, now, on ? 0.06 : 0.05);
+}
+function silenceAll(){ Object.keys(voices).forEach(id=>{ const v=voices[id]; v.g.gain.setTargetAtTime(0, AC.currentTime, 0.05); }); }
+function silentWav(){
+  const sr=8000,n=4000,b=new ArrayBuffer(44+n),v=new DataView(b);
+  const w=(o,s)=>{for(let i=0;i<s.length;i++)v.setUint8(o+i,s.charCodeAt(i))};
+  w(0,"RIFF");v.setUint32(4,36+n,true);w(8,"WAVE");w(12,"fmt ");v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);
+  v.setUint32(24,sr,true);v.setUint32(28,sr,true);v.setUint16(32,1,true);v.setUint16(34,8,true);w(36,"data");v.setUint32(40,n,true);
+  for(let i=0;i<n;i++)v.setUint8(44+i,128);
+  return URL.createObjectURL(new Blob([b],{type:"audio/wav"}));
+}
+
+/* ---------- home ---------- */
+function renderHome(){
+  const best = LS.get("dt_best", {});
+  $("levels").innerHTML = Object.keys(LEVELS).map(k=>`
+    <button class="lvl" data-lv="${k}"><span class="ico">${LEVELS[k].ico}</span>
+      <div><b>${t("lv."+k)[0]}</b><span>${t("lv."+k)[1]}</span></div>
+      <div class="best"><i>${t("best")}</i><em>${best[k]!=null?best[k]:"—"}</em></div></button>`).join("");
+  document.querySelectorAll(".lvl").forEach(b=>b.onclick=()=>startGame(b.dataset.lv));
+  const h = LS.get("dt_hist", []);
+  if(!h.length){ $("hist").innerHTML = `<li class="muted">${t("noHist")}</li>`; return; }
+  const avg = Math.round(h.slice(0,10).reduce((s,x)=>s+x.s,0)/Math.min(10,h.length));
+  const loc = {es:"es-CA",en:"en-CA",fr:"fr-CA"}[lang];
+  $("hist").innerHTML = `<li><span class="muted">${t("avg")} (${Math.min(10,h.length)})</span><span class="sc">${avg}</span></li>` +
+    h.slice(0,12).map(x=>`<li><span>${new Date(x.d).toLocaleDateString(loc,{day:"numeric",month:"short"})} · ${t("lv."+x.l)[0]} · ${x.lowA||480} Hz</span><span class="sc">${x.s}</span></li>`).join("");
+}
+
+/* ---------- game ---------- */
+let G = null, raf = 0, toastTimer = 0;
+const rnd = (a,b) => a + Math.random()*(b-a);
+function startGame(lv){
+  initAudio();
+  const L = LEVELS[lv];
+  const d = {};
+  L.drones.forEach(id=>{
+    const pStar = rnd(16,34), off = rnd(L.off[0], L.off[1]) * (Math.random()<.5?-1:1);
+    d[id] = {id, pStar, p: Math.max(1, Math.min(49, pStar+off)), drift:1};
+  });
+  G = {lv, L, d, chDrift:1, step:0, active:L.steps[0], hints:0, t0:Date.now(), warmed:false, mute:{}};
+  show("game"); buildSvg(); renderGameText(); applyStep(); loop();
+}
+function curStep(){ return G.L.steps[G.step]; }
+function applyStep(){
+  const s = curStep();
+  if(s!=="all") G.active = s;
+  else if(!G.d[G.active]) G.active = "t1";
+  if(s==="all" && G.L.drift && !G.warmed){
+    G.warmed = true; G.chDrift = 1 + rnd(3,9)/1731;
+    Object.values(G.d).forEach(x=> x.drift = 1 + rnd(1,13)/1731);
+    toast(t("warm"), 4200);
+  }
+  G.mute = {};
+  renderGameText(); updateDrones(); pushAudio();
+}
+function playing(id){ return STEP_PLAY[curStep()].includes(id) && !G.mute[id] && (id==="ch" || G.d[id]); }
+function pushAudio(){ if(!G) return; ["ch","t1","t2","b"].forEach(id=>{ if(id==="ch"||G.d[id]) setVoice(id, freqOf(id), playing(id)); else setVoice(id,100,false); }); }
+function renderGameText(){
+  $("lvlName").textContent = t("lv."+G.lv)[0];
+  $("steps").innerHTML = G.L.steps.map((s,i)=>`<span class="chip ${i===G.step?"on":i<G.step?"done":""}">${i+1}. ${t("st."+s)}</span>`).join("");
+  $("instr").textContent = t("in."+curStep());
+  $("legend").innerHTML = t("legend");
+  $("nextBtn").textContent = G.step < G.L.steps.length-1 ? t("next") : t("done");
+  $("hintBtn").disabled = !G.L.hints;
+  $("beat").classList.toggle("hidden", !G.L.aid);
+  document.querySelectorAll("#svg [data-name]").forEach(el=> el.textContent = t("n."+el.dataset.name));
+}
+function move(mm){
+  if(!G) return; const d = G.d[G.active]; if(!d) return;
+  d.p = Math.max(0, Math.min(50, d.p + mm));
+  G.lastDir = Math.sign(mm); G.lastT = performance.now();
+  updateDrones(); pushAudio();
+}
+$("nextBtn").onclick = ()=>{
+  if(G.step < G.L.steps.length-1){ G.step++; applyStep(); document.querySelectorAll(".chip")[G.step]?.scrollIntoView({inline:"center",behavior:"smooth",block:"nearest"}); }
+  else finish();
+};
+$("hintBtn").onclick = ()=>{
+  if(!G.L.hints){ toast(t("noHint")); return; }
+  const d = G.d[G.active], diff = d.p - pIdeal(d), name = t("n."+d.id);
+  G.hints++;
+  if(Math.abs(diff) < 0.35) toast(t("hOk").replace("{d}",name));
+  else { toast((diff<0?t("hUp"):t("hDn")).replace("{d}",name)); G.hintDir = diff<0?1:-1; G.hintT = performance.now(); }
+};
+$("quit").onclick = ()=>{ stopLoop(); silenceAll(); G=null; show("home"); renderHome(); };
+
+/* hold-to-repeat buttons */
+document.querySelectorAll(".mv").forEach(b=>{
+  let timer=0, rep=0;
+  const mm = parseFloat(b.dataset.mv);
+  const stop = ()=>{ clearTimeout(timer); clearInterval(rep); };
+  b.addEventListener("pointerdown", e=>{ e.preventDefault(); move(mm);
+    if(b.dataset.rep){ timer = setTimeout(()=>{ rep = setInterval(()=>move(mm), 90); }, 380); } });
+  ["pointerup","pointerleave","pointercancel"].forEach(ev=>b.addEventListener(ev, stop));
+  b.addEventListener("contextmenu", e=>e.preventDefault());
+});
+
+/* ---------- drawing ---------- */
+const SCALE = 1.2; // px per mm of slide
+const GEO = {
+  t1:{x:70, base:455, stockTop:410, ferrule:305, topLen:140, bell:30, w:13},
+  t2:{x:165, base:455, stockTop:410, ferrule:305, topLen:140, bell:30, w:13},
+  b: {x:275, base:455, stockTop:410, ferrule:245, mid:330, topLen:128, bell:38, w:15}
+};
+function buildSvg(){
+  const ids = G.L.drones;
+  // centre the drones that exist
+  const xs = ids.length===2 ? {t1:120,t2:240} : {t1:70,t2:165,b:275};
+  let s = `<defs>
+    <linearGradient id="wood" x1="0" x2="1"><stop offset="0" stop-color="#140d09"/><stop offset=".45" stop-color="#3a2a1f"/><stop offset="1" stop-color="#120b07"/></linearGradient>
+    <linearGradient id="ivory" x1="0" x2="1"><stop offset="0" stop-color="#cfc4a8"/><stop offset=".45" stop-color="#f7f1e1"/><stop offset="1" stop-color="#bfb293"/></linearGradient>
+    <linearGradient id="silver" x1="0" x2="1"><stop offset="0" stop-color="#8e949b"/><stop offset=".45" stop-color="#eef1f4"/><stop offset="1" stop-color="#7b8188"/></linearGradient>
+    <pattern id="hemp" width="6" height="4" patternUnits="userSpaceOnUse"><rect width="6" height="4" fill="#d1ab66"/><path d="M0 3.5 L6 0.5" stroke="#a7823f" stroke-width="1"/></pattern>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>`;
+  ids.forEach(id=>{
+    const g = GEO[id], x = xs[id], w = g.w;
+    s += `<g class="drone" data-id="${id}" style="cursor:grab">
+      <rect x="${x-45}" y="0" width="90" height="470" fill="transparent"/>
+      <rect class="sel" x="${x-40}" y="14" width="80" height="438" rx="16" fill="none" stroke="#b8862b" stroke-width="2.5" stroke-dasharray="6 5" opacity="0"/>
+      <!-- stock -->
+      <rect x="${x-16}" y="${g.stockTop}" width="32" height="${g.base-g.stockTop}" rx="3" fill="url(#wood)"/>
+      <rect x="${x-18}" y="${g.stockTop-7}" width="36" height="9" rx="2" fill="url(#ivory)"/>
+      <!-- bottom section -->
+      <rect x="${x-w/2}" y="${g.ferrule}" width="${w}" height="${g.stockTop-7-g.ferrule}" fill="url(#wood)"/>
+      ${g.mid?`<rect x="${x-w/2-4}" y="${g.mid-5}" width="${w+8}" height="10" rx="2" fill="url(#ivory)"/>`:""}
+      <rect x="${x-w/2-3}" y="${g.ferrule-2}" width="${w+6}" height="8" rx="2" fill="url(#silver)"/>
+      <!-- hemp (visible gap) -->
+      <rect class="hemp" x="${x-w/2+1.5}" y="${g.ferrule-2}" width="${w-3}" height="0" fill="url(#hemp)"/>
+      <!-- top section (moves) -->
+      <g class="top">
+        <rect x="${x-w/2-2}" y="${g.ferrule-2-g.topLen}" width="${w+4}" height="${g.topLen}" fill="url(#wood)"/>
+        <rect x="${x-w/2-4}" y="${g.ferrule-10}" width="${w+8}" height="9" rx="2" fill="url(#ivory)"/>
+        <rect x="${x-w/2-3.5}" y="${g.ferrule-2-g.topLen*0.55}" width="${w+7}" height="6" rx="2" fill="url(#ivory)"/>
+        <path d="M${x-w/2-2} ${g.ferrule-2-g.topLen} L${x-g.bell/2} ${g.ferrule-2-g.topLen-g.bell} L${x+g.bell/2} ${g.ferrule-2-g.topLen-g.bell} L${x+w/2+2} ${g.ferrule-2-g.topLen} Z" fill="url(#wood)"/>
+        <rect x="${x-g.bell/2-3}" y="${g.ferrule-2-g.topLen-g.bell-8}" width="${g.bell+6}" height="9" rx="3" fill="url(#ivory)"/>
+        <ellipse cx="${x}" cy="${g.ferrule-2-g.topLen-g.bell-8}" rx="${g.bell/2}" ry="3.5" fill="#0d0805"/>
+        <g class="arr arrUp" opacity="0"><path d="M${x-30} ${g.ferrule-62} l-12 14 h8 v14 h8 v-14 h8 z" fill="#1f4d3a"/></g>
+        <g class="arr arrDn" opacity="0"><path d="M${x-30} ${g.ferrule-18} l-12 -14 h8 v-14 h8 v14 h8 z" fill="#a3302b"/></g>
+      </g>
+      <text class="mm" x="${x+w/2+8}" y="${g.ferrule}" font-size="11" font-weight="700" fill="#66706a"></text>
+      <text data-name="${id}" x="${x}" y="467" text-anchor="middle" font-size="12" font-weight="700" fill="#1c2621"></text>
+      <g class="spk" data-spk="${id}"><circle cx="${x}" cy="${g.stockTop-26}" r="11" fill="#fffdf8" stroke="#ddd3c0"/><text x="${x}" y="${g.stockTop-22}" text-anchor="middle" font-size="12">🔊</text></g>
+    </g>`;
+  });
+  $("svg").innerHTML = s;
+  // interactions
+  document.querySelectorAll("#svg .drone").forEach(el=>{
+    const id = el.dataset.id;
+    el.addEventListener("pointerdown", e=>{
+      if(e.target.closest(".spk")){ G.mute[id] = !G.mute[id]; updateDrones(); pushAudio(); return; }
+      G.active = id; updateDrones();
+      const pt = svgY(e); let lastY = pt;
+      el.setPointerCapture(e.pointerId); el.style.cursor="grabbing";
+      const mv = ev=>{ const y = svgY(ev); const dy = lastY - y; if(Math.abs(dy)>=1){ move(dy/SCALE*0.5); lastY = y; } };
+      const up = ()=>{ el.removeEventListener("pointermove", mv); el.removeEventListener("pointerup", up); el.removeEventListener("pointercancel", up); el.style.cursor="grab"; };
+      el.addEventListener("pointermove", mv); el.addEventListener("pointerup", up); el.addEventListener("pointercancel", up);
+    });
+  });
+  renderGameText();
+}
+function svgY(e){ const svg=$("svg"), r=svg.getBoundingClientRect(); return (e.clientY - r.top) * 470 / r.height; }
+function updateDrones(){
+  if(!G) return;
+  document.querySelectorAll("#svg .drone").forEach(el=>{
+    const id = el.dataset.id, d = G.d[id], g = GEO[id], gap = d.p*SCALE;
+    el.querySelector(".top").setAttribute("transform", `translate(0,${-gap})`);
+    const h = el.querySelector(".hemp"); h.setAttribute("y", g.ferrule-2-gap); h.setAttribute("height", gap);
+    const mm = el.querySelector(".mm"); mm.setAttribute("y", g.ferrule-2-gap/2+4); mm.textContent = d.p.toFixed(1)+" mm";
+    el.querySelector(".sel").setAttribute("opacity", id===G.active ? 1 : 0);
+    el.querySelector(".mm").setAttribute("fill", id===G.active ? "#1c2621" : "#9aa29d");
+    const on = playing(id);
+    const spk = el.querySelector(".spk text"); spk.textContent = on ? "🔊" : "🔇";
+    el.style.opacity = (id===G.active || on) ? 1 : 0.55;
+  });
+}
+function loop(){
+  cancelAnimationFrame(raf);
+  const tick = now=>{
+    if(!G) return;
+    const sec = Math.floor((Date.now()-G.t0)/1000);
+    $("clock").textContent = Math.floor(sec/60)+":"+String(sec%60).padStart(2,"0");
+    // movement / hint arrows
+    document.querySelectorAll("#svg .drone").forEach(el=>{
+      const id = el.dataset.id, isA = id===G.active;
+      let up=0, dn=0;
+      if(isA && G.lastT){ const a = Math.max(0, 1-(now-G.lastT)/700); if(G.lastDir>0) up=a; else dn=a; }
+      if(isA && G.hintT && now-G.hintT < 2600){ const a = 0.5+0.5*Math.sin((now-G.hintT)/130); if(G.hintDir>0) up=Math.max(up,a); else dn=Math.max(dn,a); }
+      el.querySelector(".arrUp").setAttribute("opacity", up.toFixed(2));
+      el.querySelector(".arrDn").setAttribute("opacity", dn.toFixed(2));
+    });
+    // beat aid
+    if(G.L.aid){
+      const id = curStep()==="all" ? G.active : curStep();
+      const br = beatRate(id);
+      const ph = Math.abs(Math.sin(Math.PI*br*now/1000));
+      $("beatDot").style.opacity = br < 0.12 ? 1 : (0.15 + 0.85*ph).toFixed(2);
+      $("beatDot").style.background = br < 0.12 ? "#1f4d3a" : "#a3302b";
+      $("beatTxt").textContent = t("beat")+": "+(br<0.12?"✓":br.toFixed(1)+"/s");
+    }
+    raf = requestAnimationFrame(tick);
+  };
+  raf = requestAnimationFrame(tick);
+}
+function stopLoop(){ cancelAnimationFrame(raf); }
+function toast(msg, ms=2400){ const el=$("toast"); el.textContent=msg; el.classList.add("show"); clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove("show"), ms); }
+
+/* ---------- result ---------- */
+let R = null;
+function finish(){
+  stopLoop(); silenceAll();
+  const L = G.L, rows = [];
+  let tot = 0;
+  L.drones.forEach(id=>{
+    const d = G.d[id], f = fDrone(d), fi = ideal(id), c = cents(f, fi);
+    const mult = id==="b" ? 4 : 2;
+    const s = Math.max(0, 100 - L.k*Math.abs(c));
+    tot += s;
+    rows.push({id, fi, f, c, beat: Math.abs(mult*f - fCh()), fix: pIdeal(d) - d.p});
+  });
+  let score = Math.round(Math.max(0, tot/L.drones.length - G.hints*L.hintCost));
+  const secs = Math.round((Date.now()-G.t0)/1000);
+  const best = LS.get("dt_best", {}); const isBest = best[G.lv]==null || score > best[G.lv];
+  if(isBest){ best[G.lv] = score; LS.set("dt_best", best); }
+  const h = LS.get("dt_hist", []); h.unshift({d:Date.now(), l:G.lv, s:score, lowA:LOWA}); LS.set("dt_hist", h.slice(0,100));
+  R = {rows, ch:fCh(), drones:L.drones};
+  $("resScore").textContent = score;
+  $("resStars").textContent = score>=90?"⭐⭐⭐":score>=75?"⭐⭐☆":score>=50?"⭐☆☆":"☆☆☆";
+  $("resVerdict").textContent = t("vd")[score>=90?3:score>=75?2:score>=50?1:0];
+  $("resBest").classList.toggle("hidden", !isBest || h.length<2);
+  $("resLvl").textContent = t("lv."+G.lv)[0];
+  $("resRows").innerHTML = `<tr><td><b>${t("n.ch")}</b></td><td>${LOWA.toFixed(1)}</td><td>${fCh().toFixed(2)}</td><td>—</td><td>—</td><td>—</td></tr>` +
+    rows.map(r=>{
+      const ac = Math.abs(r.c), cls = ac<3?"good":ac>10?"bad":"";
+      const fx = Math.abs(r.fix)<0.25 ? "✓" : (r.fix>0?"▲ ":"▼ ")+Math.abs(r.fix).toFixed(1);
+      return `<tr><td><b>${t("n."+r.id)}</b></td><td>${r.fi.toFixed(2)}</td><td>${r.f.toFixed(2)}</td><td class="${cls}">${(r.c>0?"+":"")+r.c.toFixed(1)}</td><td>${r.beat.toFixed(1)}</td><td class="${Math.abs(r.fix)<0.25?"good":""}">${fx}</td></tr>`;
+    }).join("");
+  $("resTime").textContent = Math.floor(secs/60)+":"+String(secs%60).padStart(2,"0");
+  $("resHints").textContent = G.hints;
+  G.done = true;
+  show("result");
+}
+function listen(perfect){
+  initAudio(); if(!R) return;
+  setVoice("ch", R.ch, true);
+  ["t1","t2","b"].forEach(id=>{
+    const r = R.rows.find(x=>x.id===id);
+    if(r) setVoice(id, perfect ? r.fi : r.f, true); else setVoice(id, 100, false);
+  });
+}
+$("lsYours").onclick = ()=>listen(false);
+$("lsPerfect").onclick = ()=>listen(true);
+$("lsStop").onclick = ()=>silenceAll();
+$("again").onclick = ()=>{ silenceAll(); startGame(G.lv); };
+$("toMenu").onclick = ()=>{ silenceAll(); G=null; show("home"); renderHome(); };
+
+/* ---------- nav ---------- */
+function show(id){ ["home","game","result"].forEach(s=>$(s).classList.toggle("hidden", s!==id)); window.scrollTo(0,0); }
+$("lang").onchange = e=>{ lang = e.target.value; LS.set("dt_lang", lang); applyLang(); };
+$("aMinus").onclick = ()=>setA(LOWA-1);
+$("aPlus").onclick = ()=>setA(LOWA+1);
+$("vol").value = VOL;
+$("vol").oninput = e=>{ VOL = +e.target.value; LS.set("dt_vol", VOL); if(master) master.gain.value = VOL/100*0.9; };
+setA(LOWA);
+applyLang();
+
+/* ---------- PWA (only on the installed site) ---------- */
+if(/github\.io$/.test(location.hostname)){
+  const l=document.createElement("link"); l.rel="manifest"; l.href="manifest.webmanifest"; document.head.appendChild(l);
+  const i=document.createElement("link"); i.rel="apple-touch-icon"; i.href="icon-192.png"; document.head.appendChild(i);
+  if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
+}
+</script>
+</body>
+</html>
