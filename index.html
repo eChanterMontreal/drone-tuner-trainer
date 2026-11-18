@@ -102,6 +102,7 @@ td.bad{color:var(--red);font-weight:700}
 .meta{display:flex;justify-content:space-around;font-size:13px;color:var(--muted);margin-top:10px}
 .listen{display:flex;gap:8px;margin-top:12px}
 .listen .btn{font-size:14px;padding:12px 6px}
+.share{width:100%;margin-top:10px}
 .note{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.4}
 </style>
 </head>
@@ -111,13 +112,22 @@ td.bad{color:var(--red);font-weight:700}
 <!-- HOME -->
 <section id="home">
   <header>
-    <h1>Drone Tuner <small>v1.0</small></h1>
+    <h1>Drone Tuner <small>v1.1</small></h1>
     <select class="lang" id="lang" aria-label="Language">
       <option value="es">ES</option><option value="en">EN</option><option value="fr">FR</option>
     </select>
   </header>
   <p class="sub" data-t="sub"></p>
   <div class="levels" id="levels"></div>
+  <button class="btn sec share" id="shareBtn">📤 <span data-t="share"></span></button>
+  <div class="card hidden" id="sharePanel" style="margin-top:8px">
+    <p class="note" style="margin-top:0" data-t="shareTxt"></p>
+    <div class="actions" style="margin-top:6px">
+      <a class="btn pri" id="waLink" href="#" target="_blank" rel="noopener" style="text-align:center;text-decoration:none">WhatsApp</a>
+      <button class="btn sec" id="copyBtn" data-t="copy"></button>
+    </div>
+    <p class="note" id="shareUrl" style="word-break:break-all"></p>
+  </div>
 
   <h2 data-t="how"></h2>
   <div class="card"><ol class="how" id="howList"></ol></div>
@@ -199,7 +209,7 @@ const T = {
 es:{sub:"Afina los drones de oído hasta que desaparezca el «wa-wa-wa».",how:"Cómo se juega",history:"Historial",settings:"Ajustes",lowA:"Low A del chanter (Hz)",volume:"Volumen",
 howList:["El «wa-wa-wa» es el batido entre dos sonidos casi iguales: cuanto más lento, más cerca estás.","▲ Subir la parte de arriba alarga el drone y <b>baja</b> el tono. ▼ Bajarla lo acorta y <b>sube</b> el tono.","Primero da un paso grande (4 mm): si el wa-wa se acelera, vas en la dirección equivocada.","Luego ajusta fino hasta oír un solo tono, y toca «Listo».","También puedes arrastrar el drone con el dedo. Tócalo para elegirlo."],
 lv:{b:["Principiante","Dos tenores, con ayuda visual del batido y pistas."],m:["Intermedio","Tres drones, sin ayuda visual."],a:["Avanzado","Tres drones y el reed se calienta. Muy estricto, sin pistas."]},
-best:"Mejor",noHist:"Aún no hay partidas.",avg:"Promedio",
+best:"Mejor",share:"Compartir la app",shareTxt:"Envía este link a tus compañeros de banda:",copy:"Copiar link",copied:"¡Copiado! ✓",shareMsg:"🎵 Drone Tuner – juego para aprender a afinar los drones de la gaita de oído. Pruébalo:",noHist:"Aún no hay partidas.",avg:"Promedio",
 st:{t1:"Tenor 1 ↔ Low A",t2:"Tenor 2 ↔ Tenor 1",b:"Bajo ↔ Tenores",all:"Todos + chanter"},
 in:{t1:"Suenan el chanter (Low A) y el Tenor 1. Ajusta el Tenor 1 hasta que desaparezca el wa-wa.",t2:"Suenan los dos tenores. Ajusta el Tenor 2 contra el Tenor 1.",b:"Suenan los tenores y el bajo (una octava más abajo). Ajusta el Bajo.",all:"Suena todo junto. Toca cualquier drone para retocarlo."},
 up:"Subir",upSub:"más largo · más grave",down:"Bajar",downSub:"más corto · más agudo",fine:"fino",
@@ -215,7 +225,7 @@ vd:["Sigue practicando: busca primero la dirección con un paso grande.","Vas bi
 en:{sub:"Tune the drones by ear until the “wa-wa-wa” disappears.",how:"How to play",history:"History",settings:"Settings",lowA:"Chanter Low A (Hz)",volume:"Volume",
 howList:["The “wa-wa-wa” is the beat between two almost-equal sounds: the slower it gets, the closer you are.","▲ Moving the top section up makes the drone longer and the pitch <b>lower</b>. ▼ Moving it down makes it shorter and the pitch <b>higher</b>.","First take a big step (4 mm): if the wa-wa gets faster, you're going the wrong way.","Then fine-tune until you hear a single tone, and tap “Done”.","You can also drag the drone with your finger. Tap it to select it."],
 lv:{b:["Beginner","Two tenors, with a visual beat aid and hints."],m:["Intermediate","Three drones, no visual aid."],a:["Advanced","Three drones and the reed warms up. Very strict, no hints."]},
-best:"Best",noHist:"No games yet.",avg:"Average",
+best:"Best",share:"Share the app",shareTxt:"Send this link to your bandmates:",copy:"Copy link",copied:"Copied! ✓",shareMsg:"🎵 Drone Tuner – a game to learn to tune your bagpipe drones by ear. Try it:",noHist:"No games yet.",avg:"Average",
 st:{t1:"Tenor 1 ↔ Low A",t2:"Tenor 2 ↔ Tenor 1",b:"Bass ↔ Tenors",all:"All + chanter"},
 in:{t1:"You hear the chanter (Low A) and Tenor 1. Adjust Tenor 1 until the wa-wa disappears.",t2:"You hear both tenors. Adjust Tenor 2 against Tenor 1.",b:"You hear the tenors and the bass (one octave lower). Adjust the Bass.",all:"Everything plays together. Tap any drone to touch it up."},
 up:"Up",upSub:"longer · lower",down:"Down",downSub:"shorter · higher",fine:"fine",
@@ -231,7 +241,7 @@ vd:["Keep practising: find the direction first with a big step.","Good progress.
 fr:{sub:"Accorde les bourdons à l'oreille jusqu'à ce que le « wa-wa-wa » disparaisse.",how:"Comment jouer",history:"Historique",settings:"Réglages",lowA:"Low A du chanter (Hz)",volume:"Volume",
 howList:["Le « wa-wa-wa » est le battement entre deux sons presque identiques : plus il ralentit, plus tu es proche.","▲ Monter la partie du haut allonge le bourdon et rend le son plus <b>grave</b>. ▼ La descendre le raccourcit et rend le son plus <b>aigu</b>.","Fais d'abord un grand pas (4 mm) : si le wa-wa accélère, tu vas dans le mauvais sens.","Ensuite ajuste finement jusqu'à entendre un seul son, puis touche « Fini ».","Tu peux aussi glisser le bourdon avec le doigt. Touche-le pour le choisir."],
 lv:{b:["Débutant","Deux ténors, avec aide visuelle du battement et indices."],m:["Intermédiaire","Trois bourdons, sans aide visuelle."],a:["Avancé","Trois bourdons et l'anche se réchauffe. Très strict, sans indices."]},
-best:"Record",noHist:"Aucune partie pour l'instant.",avg:"Moyenne",
+best:"Record",share:"Partager l\'app",shareTxt:"Envoie ce lien à tes collègues de la bande :",copy:"Copier le lien",copied:"Copié ! ✓",shareMsg:"🎵 Drone Tuner – un jeu pour apprendre à accorder les bourdons de la cornemuse à l\'oreille. Essaie-le :",noHist:"Aucune partie pour l'instant.",avg:"Moyenne",
 st:{t1:"Ténor 1 ↔ Low A",t2:"Ténor 2 ↔ Ténor 1",b:"Basse ↔ Ténors",all:"Tous + chanter"},
 in:{t1:"Tu entends le chanter (Low A) et le Ténor 1. Ajuste le Ténor 1 jusqu'à ce que le wa-wa disparaisse.",t2:"Tu entends les deux ténors. Ajuste le Ténor 2 sur le Ténor 1.",b:"Tu entends les ténors et la basse (une octave plus bas). Ajuste la Basse.",all:"Tout joue ensemble. Touche un bourdon pour le retoucher."},
 up:"Monter",upSub:"plus long · plus grave",down:"Descendre",downSub:"plus court · plus aigu",fine:"fin",
@@ -573,6 +583,23 @@ $("lsPerfect").onclick = ()=>listen(true);
 $("lsStop").onclick = ()=>silenceAll();
 $("again").onclick = ()=>{ silenceAll(); startGame(G.lv); };
 $("toMenu").onclick = ()=>{ silenceAll(); G=null; show("home"); renderHome(); };
+
+/* ---------- share ---------- */
+const APP_URL = "https://echantermontreal.github.io/drone-tuner-trainer/";
+$("shareBtn").onclick = async ()=>{
+  const text = t("shareMsg");
+  if(navigator.share){
+    try{ await navigator.share({title:"Drone Tuner", text, url:APP_URL}); return; }catch(e){ if(e && e.name==="AbortError") return; }
+  }
+  $("waLink").href = "https://wa.me/?text=" + encodeURIComponent(text+" "+APP_URL);
+  $("shareUrl").textContent = APP_URL;
+  $("sharePanel").classList.toggle("hidden");
+};
+$("copyBtn").onclick = async ()=>{
+  try{ await navigator.clipboard.writeText(t("shareMsg")+" "+APP_URL); $("copyBtn").textContent = t("copied"); }
+  catch(e){ const r=document.createRange(); r.selectNodeContents($("shareUrl")); const s=getSelection(); s.removeAllRanges(); s.addRange(r); }
+  setTimeout(()=>$("copyBtn").textContent = t("copy"), 2000);
+};
 
 /* ---------- nav ---------- */
 function show(id){ ["home","game","result"].forEach(s=>$(s).classList.toggle("hidden", s!==id)); window.scrollTo(0,0); }
